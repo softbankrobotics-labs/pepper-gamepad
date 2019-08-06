@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Pepper Gamepad Sample</string>
+    <string name="no_controller_detected_title">No controller detected</string>
+    <string name="no_controller_detected_message">Please connect a controller to use the app.</string>
+</resources>
