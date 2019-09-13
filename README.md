@@ -4,6 +4,12 @@ This Android Library will help you to connect an external controller and map but
 
 This library was tested with a Xbox One Controller, but can be used with any Bluetooth input device.
 
+### Video Demonstration
+
+This video was filmed at SoftBank Robotics Europe, and shows the basic control scheme while navigating around the SBRE Showroom. 
+
+[Watch video on YouTube](https://www.youtube.com/watch?v=rdoyns-ZicA)
+
 ## Getting Started
 
 
@@ -35,12 +41,12 @@ Full implementation details are available to see in the sample project.
 
 In order to implement the library into your own project, you must build and install the .aar library, please follow this steps: 
 
-1.	Build the `pepper-gamepad` project either with Android Studio, or by running `./gradlew build` The output AAR file is located in **pepper-gamepad > build > outputs > aar**.
+1.  Build the `pepper-gamepad` project either with Android Studio, or by running `./gradlew build` The output AAR file is located in **pepper-gamepad > build > outputs > aar**.
 
 2.  In your robitified project, add the compiled AAR file:
-	* Click File > New > New Module.
-	* Click Import .JAR/.AAR Package then click Next.
-	* Enter the location of the compiled AAR or JAR file then click Finish.
+    * Click File > New > New Module.
+    * Click Import .JAR/.AAR Package then click Next.
+    * Enter the location of the compiled AAR or JAR file then click Finish.
 
 3.    Make sure the library is listed at the top of your `settings.gradle` file:
 ```
@@ -70,7 +76,7 @@ In the `onRobotFocusGained`, disable BasicAwareness, and instantiate a `RemoteRo
 
 ```
 override fun onRobotFocusGained(qiContext: QiContext) {  
-	val basicAwarenessHolder = HolderBuilder.with(qiContext)  
+    val basicAwarenessHolder = HolderBuilder.with(qiContext)  
         .withAutonomousAbilities(AutonomousAbilitiesType.BASIC_AWARENESS)  
         .build()  
         
