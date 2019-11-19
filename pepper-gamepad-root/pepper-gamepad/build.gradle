@@ -31,4 +31,5 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 
     implementation 'com.aldebaran:qisdk:1.5.3'
+	implementation 'com.aldebaran:qisdk-design:1.5.3'
 }

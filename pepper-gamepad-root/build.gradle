@@ -19,7 +19,7 @@ allprojects {
     repositories {
         google()
         jcenter()
-        maven { url 'http://kiwi.aldebaran.lan/android/sdk-internal/maven' }
+        maven { url 'https://qisdk.softbankrobotics.com/sdk/maven' }
         maven { url 'https://jitpack.io' }
     }
 }
