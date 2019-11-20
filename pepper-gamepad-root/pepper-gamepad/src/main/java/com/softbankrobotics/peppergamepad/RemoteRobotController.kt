@@ -13,6 +13,7 @@ import com.aldebaran.qi.sdk.builder.LookAtBuilder
 import com.aldebaran.qi.sdk.builder.TransformBuilder
 import kotlin.math.atan2
 import kotlin.math.cos
+import kotlin.math.roundToInt
 import kotlin.math.sin
 
 class RemoteRobotController(context: QiContext) {
@@ -59,12 +60,20 @@ class RemoteRobotController(context: QiContext) {
                 "newRightJoystickY=$newRightJoystickY")
 
         // Round values
-        val leftJoystickTheta = atan2(newLeftJoystickY, newLeftJoystickX)
-        val roundedNewLeftJoystickX = if (leftJoystickTheta != 0f) (cos(leftJoystickTheta) * 10).toInt() else 0
-        val roundedNewLeftJoystickY = if (leftJoystickTheta != 0f) (sin(leftJoystickTheta) * 10).toInt() else 0
-        val rightJoystickTheta = atan2(newRightJoystickY, newRightJoystickX)
-        val roundedNewRightJoystickX = if (rightJoystickTheta != 0f) (cos(rightJoystickTheta) * 10).toInt() else 0
-        val roundedNewRightJoystickY = if (rightJoystickTheta != 0f) (sin(rightJoystickTheta) * 10).toInt() else 0
+        var roundedNewLeftJoystickX = 0
+        var roundedNewLeftJoystickY = 0
+        if (!(newLeftJoystickX == 0f && newLeftJoystickY == 0f)) {
+            val leftJoystickTheta = atan2(newLeftJoystickY, newLeftJoystickX)
+            roundedNewLeftJoystickX = (cos(leftJoystickTheta) * 10).roundToInt()
+            roundedNewLeftJoystickY = (sin(leftJoystickTheta) * 10).roundToInt()
+        }
+        var roundedNewRightJoystickX = 0
+        var roundedNewRightJoystickY = 0
+        if (!(newRightJoystickX == 0f && newRightJoystickY == 0f)) {
+            val rightJoystickTheta = atan2(newRightJoystickY, newRightJoystickX)
+            roundedNewRightJoystickX = (cos(rightJoystickTheta) * 10).roundToInt()
+            roundedNewRightJoystickY = (sin(rightJoystickTheta) * 10).roundToInt()
+        }
 
         // Avoid repeating commands
         if (!(roundedNewLeftJoystickX == currentLeftJoystickX && roundedNewLeftJoystickY == currentLeftJoystickY)) {

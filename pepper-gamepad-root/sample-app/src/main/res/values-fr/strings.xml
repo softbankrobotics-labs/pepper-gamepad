@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Pepper Gamepad Sample</string>
+    <string name="no_controller_detected_message">Connectez une manette pour utiliser l\'application.</string>
+    <string name="no_controller_detected_title">Aucune manette détectée</string>
+    <string-array name="welcome">
+        <item>Génial, on part en balade! Prends ta manette, jette un oeil aux contrôles et on y va!</item>
+        <item>Super, j\'avais hâte de me dégourdir les roues! J\'espère que tu as ta manette, je t\'affiche un petit rappel des contrôles avant d\'y aller.</item>
+        <item>J\'ai hâte de voir où tu vas m\'en mné! Prépare ta manette, jette un oeil aux contrôles et c\'est parti!</item>
+    </string-array>
+    <string-array name="error">
+        <item>Oupsse, la manette n\'est pas connectée. Regarde sur ma tablette pour voir comment faire!</item>
+        <item>Ah mince, je ne détecte pas la manette. Regarde sur ma tablette pour voir comment la connecter!</item>
+        <item>Ah, on dirait que la manette n\'est pas connectée, j\'affiche les instructions pour le faire sur ma tablette!</item>
+    </string-array>
+</resources>

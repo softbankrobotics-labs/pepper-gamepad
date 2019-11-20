@@ -1,7 +1,6 @@
 package com.softbankrobotics.peppergamepadsample
 
 import android.app.Activity
-import android.app.AlertDialog
 import android.content.Context
 import android.hardware.input.InputManager
 import android.hardware.input.InputManager.InputDeviceListener
@@ -9,25 +8,29 @@ import android.os.Bundle
 import android.util.Log
 import android.view.InputDevice
 import android.view.MotionEvent
+import android.view.View
 import com.aldebaran.qi.sdk.QiContext
 import com.aldebaran.qi.sdk.QiSDK
 import com.aldebaran.qi.sdk.RobotLifecycleCallbacks
 import com.aldebaran.qi.sdk.`object`.holder.AutonomousAbilitiesType
 import com.aldebaran.qi.sdk.`object`.holder.Holder
 import com.aldebaran.qi.sdk.builder.HolderBuilder
+import com.aldebaran.qi.sdk.builder.SayBuilder
 import com.softbankrobotics.peppergamepad.RemoteRobotController
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlin.concurrent.thread
+import kotlin.math.abs
+import kotlin.random.Random
 
 class MainActivity : Activity(), RobotLifecycleCallbacks, InputDeviceListener {
 
-    private val TAG = "RemoteControlSample"
+    companion object {
+        private const val TAG = "RemoteControlSample"
+    }
 
     private lateinit var inputManager: InputManager
 
-    private lateinit var builder: AlertDialog.Builder
-
-    private lateinit var dialog: AlertDialog
-
+    private var qiContext: QiContext? = null
     private lateinit var basicAwarenessHolder: Holder
 
     private lateinit var remoteRobotController: RemoteRobotController
@@ -39,25 +42,24 @@ class MainActivity : Activity(), RobotLifecycleCallbacks, InputDeviceListener {
 
         QiSDK.register(this, this)
 
-        buildDialog()
-
         inputManager = getSystemService(Context.INPUT_SERVICE) as InputManager
-    }
-
-    private fun buildDialog() {
-        builder = AlertDialog.Builder(this)
-
-        builder.setMessage(R.string.no_controller_detected_title)
-            .setTitle(R.string.no_controller_detected_message)
-
-        dialog = builder.create()
-        dialog.setCanceledOnTouchOutside(false)
     }
 
     override fun onResume() {
         super.onResume()
         inputManager.registerInputDeviceListener(this, null)
         checkControllerConnection()
+
+        // Enables sticky immersive mode.
+        window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                // Set the content to appear under the system bars so that the
+                // content doesn't resize when the system bars hide and show.
+                or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                // Hide the nav bar and status bar
+                or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                or View.SYSTEM_UI_FLAG_FULLSCREEN)
     }
 
     override fun onInputDeviceRemoved(deviceId: Int) {
@@ -77,11 +79,36 @@ class MainActivity : Activity(), RobotLifecycleCallbacks, InputDeviceListener {
 
     private fun checkControllerConnection() {
         val connectedControllers = getGameControllerIds()
-        if (connectedControllers.isEmpty() && !dialog.isShowing) {
-            dialog.show()
-        } else if (dialog.isShowing) {
-            dialog.dismiss()
+        if (connectedControllers.isEmpty()) {
+            runOnUiThread {
+                backgroundGifImageView.visibility = View.INVISIBLE
+                errorImageView.visibility = View.VISIBLE
+            }
+
+            val errorSentences = resources.getStringArray(R.array.error)
+            sayRandomSentence(errorSentences)
+        } else {
+            runOnUiThread {
+                backgroundGifImageView.visibility = View.VISIBLE
+                errorImageView.visibility = View.INVISIBLE
+            }
+
+            val welcomeSentences = resources.getStringArray(R.array.welcome)
+            sayRandomSentence(welcomeSentences)
         }
+    }
+
+    private fun sayRandomSentence(sentencesArray: Array<String>) {
+        if (qiContext == null) {
+            return
+        }
+
+        val i = Random.nextInt(0, sentencesArray.size - 1)
+        SayBuilder.with(qiContext)
+            .withText(sentencesArray[i])
+            .buildAsync().andThenConsume {
+                it.async().run()
+            }
     }
 
     private fun getGameControllerIds(): List<Int> {
@@ -106,6 +133,10 @@ class MainActivity : Activity(), RobotLifecycleCallbacks, InputDeviceListener {
 
     override fun onRobotFocusGained(qiContext: QiContext) {
         Log.i(TAG, "onRobotFocusGained")
+        this.qiContext = qiContext
+
+        checkControllerConnection()
+
         // Hold Basic Awareness to avoid robot getting distracted
         basicAwarenessHolder = HolderBuilder.with(qiContext)
             .withAutonomousAbilities(AutonomousAbilitiesType.BASIC_AWARENESS)
@@ -161,7 +192,7 @@ class MainActivity : Activity(), RobotLifecycleCallbacks, InputDeviceListener {
 
             // Ignore axis values that are within the 'flat' region of the
             // joystick axis center.
-            if (Math.abs(value) > flat) {
+            if (abs(value) > flat) {
                 return value
             }
         }
@@ -170,6 +201,7 @@ class MainActivity : Activity(), RobotLifecycleCallbacks, InputDeviceListener {
 
     override fun onRobotFocusLost() {
         Log.i(TAG, "onRobotFocusLost")
+        qiContext = null
     }
 
     override fun onRobotFocusRefused(reason: String?) {
