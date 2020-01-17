@@ -2,4 +2,7 @@
     <string name="app_name">Pepper Gamepad Sample</string>
     <string name="no_controller_detected_title">No controller detected</string>
     <string name="no_controller_detected_message">Please connect a controller to use the app.</string>
+    <string name="welcome_sentence_1">Great, let\'s have fun together! Take the gamepad, look at the controls and we\'re good to go!</string>
+    <string name="welcome_sentence_2">Time to put these wheels to good use! I hope you have a gamepad ready, take a look at the controls and let\'s go!</string>
+    <string name="welcome_sentence_3">Can\'t wait to see where you\'ll take me! Here\'s how to use your gamepad, take a look and let\'s go for a ride!</string>
 </resources>
