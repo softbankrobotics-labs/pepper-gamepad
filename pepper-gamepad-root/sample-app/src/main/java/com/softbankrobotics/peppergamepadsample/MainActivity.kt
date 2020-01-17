@@ -15,10 +15,8 @@ import com.aldebaran.qi.sdk.RobotLifecycleCallbacks
 import com.aldebaran.qi.sdk.`object`.holder.AutonomousAbilitiesType
 import com.aldebaran.qi.sdk.`object`.holder.Holder
 import com.aldebaran.qi.sdk.builder.HolderBuilder
-import com.aldebaran.qi.sdk.builder.SayBuilder
 import com.softbankrobotics.peppergamepad.RemoteRobotController
 import kotlin.concurrent.thread
-import kotlin.random.Random
 
 class MainActivity : Activity(), RobotLifecycleCallbacks, InputDeviceListener {
 
@@ -121,17 +119,6 @@ class MainActivity : Activity(), RobotLifecycleCallbacks, InputDeviceListener {
         }
         remoteRobotController = RemoteRobotController(qiContext)
         Log.i(TAG, "after RemoteRobotController instantiation")
-
-        sayWelcomeSentence(qiContext)
-    }
-
-    private fun sayWelcomeSentence(qiContext: QiContext) {
-        val welcomeSentences = resources.getStringArray(R.array.welcome_strings)
-        val i = Random.nextInt(0, welcomeSentences.size - 1)
-        SayBuilder.with(qiContext)
-            .withText(welcomeSentences[i])
-            .build()
-            .run()
     }
 
     override fun onGenericMotionEvent(event: MotionEvent): Boolean {
