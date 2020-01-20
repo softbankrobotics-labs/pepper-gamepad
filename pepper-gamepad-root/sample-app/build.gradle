@@ -37,4 +37,5 @@ dependencies {
 
     implementation project(":pepper-gamepad")
 
+    implementation 'pl.droidsonroids.gif:android-gif-drawable:1.2.3'
 }
