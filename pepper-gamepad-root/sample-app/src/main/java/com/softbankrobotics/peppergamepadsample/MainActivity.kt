@@ -10,6 +10,7 @@ import android.util.Log
 import android.view.InputDevice
 import android.view.MotionEvent
 import android.view.View
+import android.view.WindowManager
 import com.aldebaran.qi.sdk.QiContext
 import com.aldebaran.qi.sdk.QiSDK
 import com.aldebaran.qi.sdk.RobotLifecycleCallbacks
@@ -94,6 +95,10 @@ class MainActivity : Activity(), RobotLifecycleCallbacks, InputDeviceListener {
         if (connectedControllers.isEmpty()) {
             if (!dialog.isShowing) {
                 runOnUiThread {
+                    dialog.window?.setFlags(
+                        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                    )
                     dialog.show()
                 }
             }
@@ -103,6 +108,10 @@ class MainActivity : Activity(), RobotLifecycleCallbacks, InputDeviceListener {
         } else {
             if (dialog.isShowing) {
                 runOnUiThread {
+                    dialog.window?.setFlags(
+                        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                    )
                     dialog.dismiss()
                 }
             }
