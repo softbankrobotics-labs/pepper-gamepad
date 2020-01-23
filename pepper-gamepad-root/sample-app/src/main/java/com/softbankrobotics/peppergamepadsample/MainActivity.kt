@@ -28,9 +28,9 @@ class MainActivity : Activity(), RobotLifecycleCallbacks, InputDeviceListener {
     private lateinit var inputManager: InputManager
 
     private lateinit var builder: AlertDialog.Builder
-
     private lateinit var dialog: AlertDialog
 
+    private lateinit var qiContext: QiContext
     private lateinit var basicAwarenessHolder: Holder
 
     private lateinit var remoteRobotController: RemoteRobotController
@@ -91,11 +91,38 @@ class MainActivity : Activity(), RobotLifecycleCallbacks, InputDeviceListener {
 
     private fun checkControllerConnection() {
         val connectedControllers = getGameControllerIds()
-        if (connectedControllers.isEmpty() && !dialog.isShowing) {
-            dialog.show()
-        } else if (dialog.isShowing) {
-            dialog.dismiss()
+        if (connectedControllers.isEmpty()) {
+            if (!dialog.isShowing) {
+                runOnUiThread {
+                    dialog.show()
+                }
+            }
+
+            val errorSentences = resources.getStringArray(R.array.error)
+            sayRandomSentence(errorSentences)
+        } else {
+            if (dialog.isShowing) {
+                runOnUiThread {
+                    dialog.dismiss()
+                }
+            }
+
+            val welcomeSentences = resources.getStringArray(R.array.welcome)
+            sayRandomSentence(welcomeSentences)
         }
+    }
+
+    private fun sayRandomSentence(sentencesArray: Array<String>) {
+        if (!::qiContext.isInitialized) {
+            return
+        }
+
+        val i = Random.nextInt(0, sentencesArray.size - 1)
+        SayBuilder.with(qiContext)
+            .withText(sentencesArray[i])
+            .buildAsync().andThenConsume {
+                it.async().run()
+            }
     }
 
     private fun getGameControllerIds(): List<Int> {
@@ -120,6 +147,10 @@ class MainActivity : Activity(), RobotLifecycleCallbacks, InputDeviceListener {
 
     override fun onRobotFocusGained(qiContext: QiContext) {
         Log.i(TAG, "onRobotFocusGained")
+        this.qiContext = qiContext
+
+        checkControllerConnection()
+
         // Hold Basic Awareness to avoid robot getting distracted
         basicAwarenessHolder = HolderBuilder.with(qiContext)
             .withAutonomousAbilities(AutonomousAbilitiesType.BASIC_AWARENESS)
@@ -133,17 +164,6 @@ class MainActivity : Activity(), RobotLifecycleCallbacks, InputDeviceListener {
         }
         remoteRobotController = RemoteRobotController(qiContext)
         Log.i(TAG, "after RemoteRobotController instantiation")
-
-        sayWelcomeSentence(qiContext)
-    }
-
-    private fun sayWelcomeSentence(qiContext: QiContext) {
-        val welcomeSentences = resources.getStringArray(R.array.welcome_strings)
-        val i = Random.nextInt(0, welcomeSentences.size - 1)
-        SayBuilder.with(qiContext)
-            .withText(welcomeSentences[i])
-            .build()
-            .run()
     }
 
     override fun onGenericMotionEvent(event: MotionEvent): Boolean {
