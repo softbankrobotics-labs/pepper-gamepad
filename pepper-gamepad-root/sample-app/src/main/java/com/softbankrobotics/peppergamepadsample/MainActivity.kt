@@ -1,7 +1,6 @@
 package com.softbankrobotics.peppergamepadsample
 
 import android.app.Activity
-import android.app.AlertDialog
 import android.content.Context
 import android.hardware.input.InputManager
 import android.hardware.input.InputManager.InputDeviceListener
@@ -10,7 +9,6 @@ import android.util.Log
 import android.view.InputDevice
 import android.view.MotionEvent
 import android.view.View
-import android.view.WindowManager
 import com.aldebaran.qi.sdk.QiContext
 import com.aldebaran.qi.sdk.QiSDK
 import com.aldebaran.qi.sdk.RobotLifecycleCallbacks
@@ -19,19 +17,20 @@ import com.aldebaran.qi.sdk.`object`.holder.Holder
 import com.aldebaran.qi.sdk.builder.HolderBuilder
 import com.aldebaran.qi.sdk.builder.SayBuilder
 import com.softbankrobotics.peppergamepad.RemoteRobotController
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlin.concurrent.thread
+import kotlin.math.abs
 import kotlin.random.Random
 
 class MainActivity : Activity(), RobotLifecycleCallbacks, InputDeviceListener {
 
-    private val TAG = "RemoteControlSample"
+    companion object {
+        private const val TAG = "RemoteControlSample"
+    }
 
     private lateinit var inputManager: InputManager
 
-    private lateinit var builder: AlertDialog.Builder
-    private lateinit var dialog: AlertDialog
-
-    private lateinit var qiContext: QiContext
+    private var qiContext: QiContext? = null
     private lateinit var basicAwarenessHolder: Holder
 
     private lateinit var remoteRobotController: RemoteRobotController
@@ -43,19 +42,7 @@ class MainActivity : Activity(), RobotLifecycleCallbacks, InputDeviceListener {
 
         QiSDK.register(this, this)
 
-        buildDialog()
-
         inputManager = getSystemService(Context.INPUT_SERVICE) as InputManager
-    }
-
-    private fun buildDialog() {
-        builder = AlertDialog.Builder(this)
-
-        builder.setMessage(R.string.no_controller_detected_title)
-            .setTitle(R.string.no_controller_detected_message)
-
-        dialog = builder.create()
-        dialog.setCanceledOnTouchOutside(false)
     }
 
     override fun onResume() {
@@ -93,27 +80,17 @@ class MainActivity : Activity(), RobotLifecycleCallbacks, InputDeviceListener {
     private fun checkControllerConnection() {
         val connectedControllers = getGameControllerIds()
         if (connectedControllers.isEmpty()) {
-            if (!dialog.isShowing) {
-                runOnUiThread {
-                    dialog.window?.setFlags(
-                        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
-                        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-                    )
-                    dialog.show()
-                }
+            runOnUiThread {
+                backgroundGifImageView.visibility = View.INVISIBLE
+                errorImageView.visibility = View.VISIBLE
             }
 
             val errorSentences = resources.getStringArray(R.array.error)
             sayRandomSentence(errorSentences)
         } else {
-            if (dialog.isShowing) {
-                runOnUiThread {
-                    dialog.window?.setFlags(
-                        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
-                        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-                    )
-                    dialog.dismiss()
-                }
+            runOnUiThread {
+                backgroundGifImageView.visibility = View.VISIBLE
+                errorImageView.visibility = View.INVISIBLE
             }
 
             val welcomeSentences = resources.getStringArray(R.array.welcome)
@@ -122,7 +99,7 @@ class MainActivity : Activity(), RobotLifecycleCallbacks, InputDeviceListener {
     }
 
     private fun sayRandomSentence(sentencesArray: Array<String>) {
-        if (!::qiContext.isInitialized) {
+        if (qiContext == null) {
             return
         }
 
@@ -215,7 +192,7 @@ class MainActivity : Activity(), RobotLifecycleCallbacks, InputDeviceListener {
 
             // Ignore axis values that are within the 'flat' region of the
             // joystick axis center.
-            if (Math.abs(value) > flat) {
+            if (abs(value) > flat) {
                 return value
             }
         }
@@ -224,6 +201,7 @@ class MainActivity : Activity(), RobotLifecycleCallbacks, InputDeviceListener {
 
     override fun onRobotFocusLost() {
         Log.i(TAG, "onRobotFocusLost")
+        qiContext = null
     }
 
     override fun onRobotFocusRefused(reason: String?) {

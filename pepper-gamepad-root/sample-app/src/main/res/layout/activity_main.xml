@@ -7,10 +7,21 @@
         tools:context="com.softbankrobotics.peppergamepadsample.MainActivity">
 
     <pl.droidsonroids.gif.GifImageView
-        android:id="@+id/gifImageView"
+        android:id="@+id/backgroundGifImageView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="@drawable/background"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="ContentDescription" />
+
+    <ImageView
+        android:id="@+id/errorImageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/error"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
