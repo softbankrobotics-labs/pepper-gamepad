@@ -8,7 +8,7 @@ This library was tested with a Xbox One Controller, but can be used with any Blu
 
 This video was filmed at SoftBank Robotics Europe, and shows the basic control scheme while navigating around the SBRE Showroom. 
 
-[Watch video on YouTube](https://www.youtube.com/watch?v=rdoyns-ZicA)
+[Watch video on YouTube](https://youtu.be/ECXIhBUcHZ8)
 
 ## Getting Started
 
@@ -37,30 +37,9 @@ Full implementation details are available to see in the sample project.
 
 ### Installing
 
-[**Download the latest compiled .aar**](pepper-gamepad-root/pepper-gamepad/compiled/pepper-gamepad-1.0.0.aar)
+[**Follow these instructions**](https://jitpack.io/#softbankrobotics-labs/pepper-gamepad)
 
-In order to implement the library into your own project, you must build and install the .aar library, please follow this steps: 
-
-1.  Build the `pepper-gamepad` project either with Android Studio, or by running `./gradlew build` The output AAR file is located in **pepper-gamepad > build > outputs > aar**.
-
-2.  In your robitified project, add the compiled AAR file:
-    * Click File > New > New Module.
-    * Click Import .JAR/.AAR Package then click Next.
-    * Enter the location of the compiled AAR or JAR file then click Finish.
-
-3.    Make sure the library is listed at the top of your `settings.gradle` file:
-```
-include ':app',  ':pepper-gamepad-1.0.0'
-```
-
-4.  Open the app module's  `build.gradle`  file and add a new line to the  `dependencies`  block as shown in the following snippet:
-```
-dependencies {
-   implementation project(":pepper-gamepad-1.0.0")
-}
-```
-
-5.  Click  **Sync Project with Gradle Files**.
+Make sure to replace 'Tag' by the number of the version of the library you want to use.
 
 
 ## Usage
