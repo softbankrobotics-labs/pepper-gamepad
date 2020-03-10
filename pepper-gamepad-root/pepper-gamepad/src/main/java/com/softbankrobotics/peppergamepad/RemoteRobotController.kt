@@ -64,8 +64,8 @@ class RemoteRobotController(context: QiContext) {
         var roundedNewLeftJoystickY = 0
         if (!(newLeftJoystickX == 0f && newLeftJoystickY == 0f)) {
             val leftJoystickTheta = atan2(newLeftJoystickY, newLeftJoystickX)
-            roundedNewLeftJoystickX = (cos(leftJoystickTheta) * 10).roundToInt()
-            roundedNewLeftJoystickY = (sin(leftJoystickTheta) * 10).roundToInt()
+            roundedNewLeftJoystickX = (cos(leftJoystickTheta) * 2).roundToInt() * 5
+            roundedNewLeftJoystickY = (sin(leftJoystickTheta) * 2).roundToInt() * 5
         }
         var roundedNewRightJoystickX = 0
         var roundedNewRightJoystickY = 0
