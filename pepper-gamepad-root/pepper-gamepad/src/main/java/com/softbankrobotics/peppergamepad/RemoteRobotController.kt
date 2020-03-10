@@ -102,7 +102,7 @@ class RemoteRobotController(context: QiContext) {
             val targetX = -currentLeftJoystickY.toDouble()
             val targetY = -currentLeftJoystickX.toDouble()
 
-            val animationString = "[\"Holonomic\", [\"Line\", [$targetX, $targetY]], 0.0, 30.0]"
+            val animationString = "[\"Holonomic\", [\"Line\", [$targetX, $targetY]], 0.0, 40.0]"
             val animation = AnimationBuilder.with(qiContext).withTexts(animationString).build()
             val animate = AnimateBuilder.with(qiContext).withAnimation(animation).build()
             animate.addOnStartedListener {
