@@ -16,12 +16,13 @@ import kotlin.math.cos
 import kotlin.math.roundToInt
 import kotlin.math.sin
 
-class RemoteRobotController(context: QiContext) {
+class RemoteRobotController(private val qiContext: QiContext) {
 
     private val TAG = "RemoteRobotController"
 
-    private val qiContext = context
-
+    var isRunning = false
+        private set
+    private var startAfterInitialization = false
     private var isMoving = false
 
     private var currentLeftJoystickX = 0
@@ -29,20 +30,35 @@ class RemoteRobotController(context: QiContext) {
     private var currentRightJoystickX = 0
     private var currentRightJoystickY = 0
 
-    private var lookAtFuture: Future<Void>
+    private lateinit var lookAtFuture: Future<Void>
     private lateinit var animateFuture: Future<Void>
 
-    private var defaultPosition: Transform
-    private var targetFrame: AttachedFrame
-    private var lookAt: LookAt
+    private lateinit var defaultPosition: Transform
+    private lateinit var targetFrame: AttachedFrame
+    private lateinit var lookAt: LookAt
+
     init {
-        val robotFrame = qiContext.actuation.robotFrame()
-        defaultPosition = TransformBuilder.create().fromXTranslation(100.0)
-        targetFrame = robotFrame.makeAttachedFrame(defaultPosition)
-        lookAt = LookAtBuilder.with(qiContext).withFrame(targetFrame.frame()).build()
-        lookAt.addOnStartedListener {
-            Log.i(TAG, "LookAt started")
+        qiContext.actuation.async().gazeFrame().andThenConsume { robotFrame ->
+            defaultPosition = TransformBuilder.create().fromXTranslation(100.0)
+            targetFrame = robotFrame.makeAttachedFrame(defaultPosition)
+            lookAt = LookAtBuilder.with(qiContext).withFrame(targetFrame.frame()).build()
+            lookAt.addOnStartedListener {
+                Log.i(TAG, "LookAt started")
+            }
+            if (startAfterInitialization) start()
         }
+    }
+
+    fun start() {
+        Log.d(TAG, "start")
+
+        if (!::lookAt.isInitialized) {
+            startAfterInitialization = true
+            return
+        }
+
+        if (isRunning) return
+
         lookAtFuture = lookAt.async().run()
         lookAtFuture.thenConsume {
             when {
@@ -51,13 +67,33 @@ class RemoteRobotController(context: QiContext) {
                 lookAtFuture.isCancelled -> Log.e(TAG, "LookAt cancelled")
             }
         }
+
+        isRunning = true
     }
 
-    fun updateTarget(newLeftJoystickX: Float, newLeftJoystickY: Float, newRightJoystickX: Float, newRightJoystickY: Float) {
-        Log.d(TAG, "updateTarget newLeftJoystickX=$newLeftJoystickX " +
-                "newLeftJoystickY=$newLeftJoystickY " +
-                "newRightJoystickX=$newRightJoystickX " +
-                "newRightJoystickY=$newRightJoystickY")
+    fun stop() {
+        Log.d(TAG, "stop")
+
+        if (!isRunning) return
+
+        lookAtFuture.requestCancellation()
+        animateFuture.requestCancellation()
+
+        isRunning = false
+    }
+
+    fun updateTarget(
+        newLeftJoystickX: Float,
+        newLeftJoystickY: Float,
+        newRightJoystickX: Float,
+        newRightJoystickY: Float
+    ) {
+        Log.d(
+            TAG, "updateTarget newLeftJoystickX=$newLeftJoystickX " +
+                    "newLeftJoystickY=$newLeftJoystickY " +
+                    "newRightJoystickX=$newRightJoystickX " +
+                    "newRightJoystickY=$newRightJoystickY"
+        )
 
         // Round values
         var roundedNewLeftJoystickX = 0
@@ -91,46 +127,59 @@ class RemoteRobotController(context: QiContext) {
     }
 
     private fun makeTranslation() {
-        Log.d(TAG, "makeTranslation currentLeftJoystickX=$currentLeftJoystickX currentLeftJoystickY=$currentLeftJoystickY")
+        Log.d(
+            TAG,
+            "makeTranslation currentLeftJoystickX=$currentLeftJoystickX currentLeftJoystickY=$currentLeftJoystickY"
+        )
+
+        if (!isRunning) return
 
         if (::animateFuture.isInitialized && !animateFuture.isDone) {
             animateFuture.requestCancellation()
         } else if (!(currentLeftJoystickX == 0 && currentLeftJoystickY == 0) && !isMoving) {
             isMoving = true
-            lookAt.policy = LookAtMovementPolicy.HEAD_ONLY
+            lookAt.async().setPolicy(LookAtMovementPolicy.HEAD_ONLY).andThenConsume {
+                val targetX = -currentLeftJoystickY.toDouble()
+                val targetY = -currentLeftJoystickX.toDouble()
 
-            val targetX = -currentLeftJoystickY.toDouble()
-            val targetY = -currentLeftJoystickX.toDouble()
+                val animationString = "[\"Holonomic\", [\"Line\", [$targetX, $targetY]], 0.0, 40.0]"
+                val animation = AnimationBuilder.with(qiContext).withTexts(animationString).build()
+                val animate = AnimateBuilder.with(qiContext).withAnimation(animation).build()
+                animate.addOnStartedListener {
+                    Log.i(TAG, "Animate started")
 
-            val animationString = "[\"Holonomic\", [\"Line\", [$targetX, $targetY]], 0.0, 40.0]"
-            val animation = AnimationBuilder.with(qiContext).withTexts(animationString).build()
-            val animate = AnimateBuilder.with(qiContext).withAnimation(animation).build()
-            animate.addOnStartedListener {
-                Log.i(TAG, "Animate started")
-
-                if (!(targetX == -currentLeftJoystickY.toDouble() && targetY == -currentLeftJoystickX.toDouble())) {
-                    animateFuture.requestCancellation()
-                }
-            }
-
-            animateFuture = animate.async().run()
-            animateFuture.thenConsume {
-                when {
-                    animateFuture.isSuccess -> Log.i(TAG, "Animate finished with success")
-                    animateFuture.hasError() -> Log.e(TAG, "Animate error: ${animateFuture.errorMessage}")
-                    animateFuture.isCancelled -> Log.i(TAG, "Animate cancelled")
+                    if (!(targetX == -currentLeftJoystickY.toDouble() && targetY == -currentLeftJoystickX.toDouble())) {
+                        animateFuture.requestCancellation()
+                    }
                 }
 
-                lookAt.policy = LookAtMovementPolicy.HEAD_AND_BASE
-                isMoving = false
+                animateFuture = animate.async().run()
+                animateFuture.thenConsume {
+                    when {
+                        animateFuture.isSuccess -> Log.i(TAG, "Animate finished with success")
+                        animateFuture.hasError() -> Log.e(
+                            TAG,
+                            "Animate error: ${animateFuture.errorMessage}"
+                        )
+                        animateFuture.isCancelled -> Log.i(TAG, "Animate cancelled")
+                    }
 
-                makeTranslation()
+                    lookAt.policy = LookAtMovementPolicy.HEAD_AND_BASE
+                    isMoving = false
+
+                    makeTranslation()
+                }
             }
         }
     }
 
     private fun makeRotation() {
-        Log.d(TAG, "makeRotation currentRightJoystickX=$currentRightJoystickX currentRightJoystickY=$currentRightJoystickY")
+        Log.d(
+            TAG,
+            "makeRotation currentRightJoystickX=$currentRightJoystickX currentRightJoystickY=$currentRightJoystickY"
+        )
+
+        if (!isRunning) return
 
         if (currentRightJoystickX == 0 && currentRightJoystickY == 0) {
             targetFrame.update(defaultPosition)

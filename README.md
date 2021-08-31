@@ -12,7 +12,6 @@ This video was filmed at SoftBank Robotics Europe, and shows the basic control s
 
 ## Getting Started
 
-
 ### Prerequisites
 
 A robotified project for Pepper with QiSDK. Read the [documentation](https://developer.softbankrobotics.com/pepper-qisdk) if needed
@@ -41,7 +40,6 @@ Full implementation details are available to see in the sample project.
 
 Make sure to replace 'Tag' by the number of the version of the library you want to use.
 
-
 ## Usage
 
 *This README assumes some standard setup can be done by the user, such as initialising variables or implementing code in the correct functions. Refer to the Sample Project for full usage code.*
@@ -50,8 +48,7 @@ Initialise the QISDK in the onCreate. If you are unsure how to do this, refer to
 
     QiSDK.register(this, this)
 
-In the `onRobotFocusGained`, disable BasicAwareness, and instantiate a `RemoteRobotController` object by passing it the QiContext. 
-
+In the `onRobotFocusGained`, disable BasicAwareness, and instantiate a `RemoteRobotController` object by passing it the QiContext. Then start it.
 
 ```
 override fun onRobotFocusGained(qiContext: QiContext) {  
@@ -68,17 +65,13 @@ override fun onRobotFocusGained(qiContext: QiContext) {
     }  
     
     remoteRobotController = RemoteRobotController(qiContext)   
+	remoteRobotController.start()
 }
 ```
-
-
-
-
 Get the position of the controller and call updateTarget method. It is important to call this function in a thread, as it is using references to the QISDK.
 ```
 remoteRobotController.updateTarget(leftJoystickX, leftJoystickY, rightJoystickX, rightJoystickY)
 ```
-
 - Left joystick makes Pepper translate
 - Right joystick makes Pepper rotate
 
@@ -124,6 +117,14 @@ private fun getCenteredAxis(event: MotionEvent, device: InputDevice, axis: Int):
     
     return 0f  
 }
+```
+
+You can stop `RemoteRobotController` object whenever you want by calling the `stop()` method. This can be helpfull if you want to run animations for instance:
+
+```
+remoteRobotController.stop()
+myCustomAnimation.run()
+remoteRobotController.start()
 ```
 
 ## License

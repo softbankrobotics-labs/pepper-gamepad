@@ -149,7 +149,7 @@ class MainActivity : Activity(), RobotLifecycleCallbacks, InputDeviceListener {
             }
         }
         remoteRobotController = RemoteRobotController(qiContext)
-        Log.i(TAG, "after RemoteRobotController instantiation")
+        remoteRobotController.start()
     }
 
     override fun onGenericMotionEvent(event: MotionEvent): Boolean {
@@ -168,7 +168,12 @@ class MainActivity : Activity(), RobotLifecycleCallbacks, InputDeviceListener {
 
         if (::remoteRobotController.isInitialized) {
             thread {
-                remoteRobotController.updateTarget(leftJoystickX, leftJoystickY, rightJoystickX, rightJoystickY)
+                remoteRobotController.updateTarget(
+                    leftJoystickX,
+                    leftJoystickY,
+                    rightJoystickX,
+                    rightJoystickY
+                )
             }
         } else {
             Log.d(TAG, "@@@@@@@@@ not initialized")
@@ -202,6 +207,7 @@ class MainActivity : Activity(), RobotLifecycleCallbacks, InputDeviceListener {
     override fun onRobotFocusLost() {
         Log.i(TAG, "onRobotFocusLost")
         qiContext = null
+        remoteRobotController.stop()
     }
 
     override fun onRobotFocusRefused(reason: String?) {
